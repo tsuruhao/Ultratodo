@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Ultra Life App</title>
+<title>ライフアプリ</title>
 
 <style>
 body{
@@ -13,7 +13,10 @@ body{
   padding:20px;
 }
 
-h1{font-size:28px;margin-bottom:10px;}
+h1{
+  font-size:28px;
+  margin-bottom:10px;
+}
 
 .tabs{
   display:flex;
@@ -27,10 +30,11 @@ h1{font-size:28px;margin-bottom:10px;}
   padding:10px;
   border-radius:10px;
   background:#2a2a2d;
-  cursor:pointer;
 }
 
-.active{background:#4d7dff;}
+.active{
+  background:#4d7dff;
+}
 
 input, textarea{
   width:100%;
@@ -69,8 +73,8 @@ button{
 }
 
 .done{
+  opacity:0.4;
   text-decoration:line-through;
-  opacity:0.5;
 }
 
 .del{
@@ -80,42 +84,39 @@ button{
   border-radius:8px;
   padding:6px 10px;
 }
-
 .hidden{display:none;}
-
-small{opacity:0.6;}
 </style>
 </head>
 
 <body>
 
-<h1>Ultra Life</h1>
+<h1>ライフアプリ</h1>
 
 <div class="tabs">
-  <div class="tab active" onclick="sw('todo')">Todo</div>
-  <div class="tab" onclick="sw('diary')">Diary</div>
-  <div class="tab" onclick="sw('cal')">Calendar</div>
+  <div class="tab active" onclick="sw('todo')">タスク</div>
+  <div class="tab" onclick="sw('diary')">日記</div>
+  <div class="tab" onclick="sw('cal')">カレンダー</div>
 </div>
 
-<!-- TODO -->
+<!-- タスク -->
 <div id="todo">
-  <input id="t" placeholder="New Task">
-  <button onclick="add()">Add Task</button>
+  <input id="t" placeholder="新しいタスク">
+  <button onclick="add()">追加</button>
   <div id="list"></div>
 </div>
 
-<!-- DIARY -->
+<!-- 日記 -->
 <div id="diary" class="hidden">
-  <textarea id="d" rows="6" placeholder="Write diary..."></textarea>
-  <button onclick="saveDiary()">Save Diary</button>
+  <textarea id="d" rows="6" placeholder="日記を書く..."></textarea>
+  <button onclick="saveDiary()">保存</button>
   <div id="dview"></div>
 </div>
 
-<!-- CALENDAR -->
+<!-- カレンダー -->
 <div id="cal" class="hidden">
   <input type="date" id="date">
-  <textarea id="note" rows="4" placeholder="Schedule..."></textarea>
-  <button onclick="saveCal()">Save</button>
+  <textarea id="note" rows="4" placeholder="予定を書く..."></textarea>
+  <button onclick="saveCal()">保存</button>
   <div id="cview"></div>
 </div>
 
@@ -124,13 +125,14 @@ let tasks = JSON.parse(localStorage.t || "[]");
 let diary = localStorage.d || "";
 let cal = JSON.parse(localStorage.c || "{}");
 
+/* 保存 */
 function save(){
   localStorage.t = JSON.stringify(tasks);
   localStorage.d = diary;
   localStorage.c = JSON.stringify(cal);
 }
 
-/* TAB */
+/* タブ切り替え */
 function sw(x){
   document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
   event.target.classList.add('active');
@@ -141,7 +143,7 @@ function sw(x){
   document.getElementById(x).classList.remove('hidden');
 }
 
-/* TODO */
+/* タスク */
 function draw(){
   let l = document.getElementById("list");
   l.innerHTML="";
@@ -157,31 +159,32 @@ function draw(){
 }
 
 function add(){
-  let v = t.value;
-  if(!v) return;
-  tasks.push({t:v,c:false});
+  if(!t.value) return;
+  tasks.push({t:t.value,c:false});
   t.value="";
-  save();draw();
+  save();
+  draw();
 }
 
 function toggle(i){
   tasks[i].c=!tasks[i].c;
-  save();draw();
+  save();
+  draw();
 }
 
 function del(i){
   tasks.splice(i,1);
-  save();draw();
+  save();
+  draw();
 }
 
-/* DIARY */
+/* 日記 */
 function saveDiary(){
   diary = d.value;
   save();
-  dview.innerHTML = "<small>Saved</small>";
 }
 
-/* CALENDAR */
+/* カレンダー */
 function saveCal(){
   if(!date.value) return;
   cal[date.value]=note.value;
@@ -194,11 +197,10 @@ function renderCal(){
   let c = document.getElementById("cview");
   c.innerHTML="";
   for(let k in cal){
-    c.innerHTML += `<div class="item"><b>${k}</b><span>${cal[k]}</span></div>`;
+    c.innerHTML += `<div class="item"><b>${k}</b>：${cal[k]}</div>`;
   }
 }
 
-/* INIT */
 draw();
 d.value = diary;
 renderCal();
