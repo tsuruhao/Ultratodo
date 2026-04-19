@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Ultra Todo</title>
+<title>Ultra Life App</title>
 
 <style>
 body{
@@ -10,37 +10,49 @@ body{
   background:#18181a;
   color:#fff;
   font-family:-apple-system;
-  padding:24px;
+  padding:20px;
 }
 
-h1{
-  font-size:34px;
-  margin-bottom:16px;
+h1{font-size:28px;margin-bottom:10px;}
+
+.tabs{
+  display:flex;
+  gap:8px;
+  margin-bottom:15px;
 }
 
-input{
+.tab{
+  flex:1;
+  text-align:center;
+  padding:10px;
+  border-radius:10px;
+  background:#2a2a2d;
+  cursor:pointer;
+}
+
+.active{background:#4d7dff;}
+
+input, textarea{
   width:100%;
-  padding:16px;
-  font-size:16px;
+  padding:14px;
   border:none;
-  border-radius:16px;
+  border-radius:12px;
   background:#333;
   color:#fff;
   box-sizing:border-box;
+  margin-bottom:10px;
 }
 
 button{
   width:100%;
-  padding:16px;
-  margin-top:10px;
-  font-size:18px;
+  padding:14px;
   border:none;
-  border-radius:16px;
+  border-radius:12px;
   background:#4d7dff;
   color:#fff;
 }
 
-.task{
+.item{
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -48,10 +60,12 @@ button{
   margin-top:10px;
   border-radius:12px;
   background:#222;
+  transition:0.2s;
 }
 
-.task span{
-  flex:1;
+.item:active{
+  transform:scale(0.98);
+  opacity:0.8;
 }
 
 .done{
@@ -66,67 +80,128 @@ button{
   border-radius:8px;
   padding:6px 10px;
 }
-</style>
 
+.hidden{display:none;}
+
+small{opacity:0.6;}
+</style>
 </head>
 
 <body>
 
-<h1>Ultra Todo</h1>
+<h1>Ultra Life</h1>
 
-<input id="t" placeholder="New Task">
+<div class="tabs">
+  <div class="tab active" onclick="sw('todo')">Todo</div>
+  <div class="tab" onclick="sw('diary')">Diary</div>
+  <div class="tab" onclick="sw('cal')">Calendar</div>
+</div>
 
-<button onclick="add()">Add</button>
+<!-- TODO -->
+<div id="todo">
+  <input id="t" placeholder="New Task">
+  <button onclick="add()">Add Task</button>
+  <div id="list"></div>
+</div>
 
-<div id="l"></div>
+<!-- DIARY -->
+<div id="diary" class="hidden">
+  <textarea id="d" rows="6" placeholder="Write diary..."></textarea>
+  <button onclick="saveDiary()">Save Diary</button>
+  <div id="dview"></div>
+</div>
+
+<!-- CALENDAR -->
+<div id="cal" class="hidden">
+  <input type="date" id="date">
+  <textarea id="note" rows="4" placeholder="Schedule..."></textarea>
+  <button onclick="saveCal()">Save</button>
+  <div id="cview"></div>
+</div>
 
 <script>
-let a = JSON.parse(localStorage.getItem("todo") || "[]");
+let tasks = JSON.parse(localStorage.t || "[]");
+let diary = localStorage.d || "";
+let cal = JSON.parse(localStorage.c || "{}");
 
 function save(){
-  localStorage.setItem("todo", JSON.stringify(a));
+  localStorage.t = JSON.stringify(tasks);
+  localStorage.d = diary;
+  localStorage.c = JSON.stringify(cal);
 }
 
-function draw(){
-  let l = document.getElementById("l");
-  l.innerHTML = "";
+/* TAB */
+function sw(x){
+  document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
+  event.target.classList.add('active');
 
-  a.forEach((item, i) => {
-    l.innerHTML += `
-      <div class="task">
-        <span onclick="toggle(${i})" class="${item.c ? 'done' : ''}">
-          ${item.t}
+  ['todo','diary','cal'].forEach(i=>{
+    document.getElementById(i).classList.add('hidden');
+  });
+  document.getElementById(x).classList.remove('hidden');
+}
+
+/* TODO */
+function draw(){
+  let l = document.getElementById("list");
+  l.innerHTML="";
+  tasks.forEach((t,i)=>{
+    l.innerHTML+=`
+      <div class="item">
+        <span onclick="toggle(${i})" class="${t.c?'done':''}">
+          ${t.t}
         </span>
         <button class="del" onclick="del(${i})">×</button>
-      </div>
-    `;
+      </div>`;
   });
 }
 
 function add(){
-  let t = document.getElementById("t");
-  if(t.value.trim() === "") return;
-
-  a.push({t: t.value, c: false});
-  t.value = "";
-
-  save();
-  draw();
+  let v = t.value;
+  if(!v) return;
+  tasks.push({t:v,c:false});
+  t.value="";
+  save();draw();
 }
 
 function toggle(i){
-  a[i].c = !a[i].c;
-  save();
-  draw();
+  tasks[i].c=!tasks[i].c;
+  save();draw();
 }
 
 function del(i){
-  a.splice(i,1);
-  save();
-  draw();
+  tasks.splice(i,1);
+  save();draw();
 }
 
+/* DIARY */
+function saveDiary(){
+  diary = d.value;
+  save();
+  dview.innerHTML = "<small>Saved</small>";
+}
+
+/* CALENDAR */
+function saveCal(){
+  if(!date.value) return;
+  cal[date.value]=note.value;
+  note.value="";
+  save();
+  renderCal();
+}
+
+function renderCal(){
+  let c = document.getElementById("cview");
+  c.innerHTML="";
+  for(let k in cal){
+    c.innerHTML += `<div class="item"><b>${k}</b><span>${cal[k]}</span></div>`;
+  }
+}
+
+/* INIT */
 draw();
+d.value = diary;
+renderCal();
 </script>
 
 </body>
